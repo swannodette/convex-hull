@@ -73,9 +73,9 @@
        (= x1# x2#) (if (< y1# y2#) ~p1 ~p2)
        :else       ~p2)))
 
-(defn find-min-point [#^"[Ljavax.vecmath.Vector2d;" points]
-  (areduce points i result (aget points (int 0))
-	   (point-min result (aget points i))))
+(defn find-min-point [#^"[Ljavax.vecmath.Vector2d;" vs]
+  (areduce vs i result (aget vs (int 0))
+	   (point-min result (aget vs i))))
 
 (defmacro angle-and-point [point base]
   `[(pseudo-angle (sub ~point ~base)) ~point])
@@ -87,9 +87,9 @@
 
 ;; this could be made parallel
 ;; should verify that this is running as fast as possible
-(defmacro find-point-with-least-angle-from [base angle points]
-  `(areduce ~points i# result# nil
-	    (let [next# (aget ~points i#)]
+(defmacro find-point-with-least-angle-from [base angle vs]
+  `(areduce ~vs i# result# nil
+	    (let [next# (aget ~vs i#)]
 	      (if (not= ~base next#)
 		(let [next-angle# (pseudo-angle (sub next# ~base))]
 		  (if (>= next-angle# ~angle)
@@ -99,12 +99,12 @@
 		    result#))
 		result#))))
 
-(defn hull [#^"[Ljavax.vecmath.Vector2d;" points]
+(defn hull [#^"[Ljavax.vecmath.Vector2d;" vs]
   (println "Start")
-  (let [#^Vector2d starting-point (find-min-point points)]
+  (let [#^Vector2d starting-point (find-min-point vs)]
     (println starting-point)
     (loop [hull-list [starting-point] angle (float 0) #^Vector2d last-point starting-point]
-      (let [[angle #^Vector2d next-point] (find-point-with-least-angle-from last-point angle points)
+      (let [[angle #^Vector2d next-point] (find-point-with-least-angle-from last-point angle (points vs))
 	    #^Vector2d first-point        (first hull-list)]
         (if (.equals next-point first-point)
           hull-list
