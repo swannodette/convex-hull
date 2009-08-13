@@ -17,6 +17,26 @@
 	(and (< dx 0) (>= dy 0))  (+ 3 (quadrant-one-pseudo-angle dy (abs dx)))
 	:else nil)))
 
+(comment
+  (time
+   (dotimes [x 1000000]
+     (pseudo-angle [5 5])))
+
+  (time
+   (dotimes [x 1000000]
+     (quadrant-one-pseudo-angle 5 5)))
+
+  (time
+   (let [p1 [5 5]
+	 p2 [10 10]]
+    (dotimes [x 1000000]
+      (delta-point p1 p2))))
+
+  (delta-point [5 5] [10 10])
+
+  (angle-and-point [5 5] [1 1])
+ )
+
 (defn point-min [[x1 y1 :as p1] [x2 y2 :as p2]]
   (let [x1 (float x1)
 	y1 (float y1)
