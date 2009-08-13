@@ -12,4 +12,3 @@
 
 ;; tho why bother when you can just do this? ;)
 (.test (new TimeJarvisMarch))
-  
