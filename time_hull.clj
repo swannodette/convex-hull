@@ -48,7 +48,7 @@
 
 (defn find-min-point [points]
   (let [#^"[Ljavax.vecmath.Vector2d;" points points]
-    (areduce points i result (aget points 0)
+    (areduce points i result (aget points (int 0))
 	     (point-min result (aget points i)))))
 
 (defmacro delta-point [p1 p2]
@@ -77,6 +77,17 @@
 		  (remove
 		   (fn [p] (= base p))
 		   points))))))
+
+(defmacro find-point-with-least-angle-from [base angle points]
+  `(let [#^Vector2d base#              ~base
+	 angle#                        (float ~angle)
+	 #^"[Ljavax.vecmath.Vector2d;" points]
+    (areduce points i result (aget points (int 0))
+	    (let [#^Vector2d next (aget points i)]
+	      (if (and (not= base next)
+		       (>= (pseudo-angle next) angle))
+		(min-angle-and-point result next)
+		next)))))
 
 (comment
   ;; ignore p that eq base
