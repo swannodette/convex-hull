@@ -88,6 +88,7 @@
 		   (fn [p] (= base p))
 		   points))))))
 
+;; this could be made parallel
 (defmacro find-point-with-least-angle-from [base angle points]
   `(let [#^Vector2d base#                      ~base
 	 angle#                                (float ~angle)
