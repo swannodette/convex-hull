@@ -6,20 +6,10 @@
 
 (set! *warn-on-reflection* 1)
 
-;; 200ms - 500ms
 (def #^"[Ljavax.vecmath.Vector2d;" my-points (make-points 400000 rand-point))
 (let [hull-points (time (hull my-points))]
   (printf "Points: %d\n" (count hull-points))
   (doseq [x hull-points] (println x)))
-
-;; tho why bother when you can just do this? ;)
-;(.test (new TimeJarvisMarch))
-
-(comment
-  (time
-   (let [#^"[Ljavax.vecmath.Vector2d;" my-points my-points]
-     (find-min-point my-points)))
-  )
 
 (comment
   ;; CORRECT - 230ms
@@ -65,14 +55,6 @@
 		   (add result p)))))))
 
   (def my-floats (make-array (. Float TYPE) 400000))
-
-  ;; 2000ms, type hint in macro doesn't not work
-  (time
-   (do
-     (set! *warn-on-reflection* 1)
-     (dotimes [x 20]
-       (areduce my-floats i result (float 1)
-		(+ result (float (aget my-floats i)))))))
 
   ;; 45ms, the CORRECT way to do things
   (time
