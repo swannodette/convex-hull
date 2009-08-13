@@ -1,5 +1,6 @@
 (ns time-hull
-  (:use convex-hull))
+  (:use convex-hull)
+  (:import TimeJarvisMarch))
 
 (set! *warn-on-reflection* 1)
 
@@ -8,4 +9,7 @@
 (let [hull-points (time (hull my-points))]
   (printf "Points: %d\n" (count hull-points))
   (doseq [x hull-points] (println x)))
+
+;; tho why bother when you can just do this? ;)
+(.test (new TimeJarvisMarch))
   

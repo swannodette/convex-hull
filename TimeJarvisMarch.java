@@ -1,12 +1,12 @@
 import java.util.Random;
 
 public class TimeJarvisMarch {
-    public static void main(String[] args) {
+    public void run(String[] args) {
 	for (int i=0; i<10; i++)
 	    test();
     }
 
-    private static void test() {
+    public void test() {
 	final int POINTS = 1000000;
 
 	double x[] = new double[POINTS];
