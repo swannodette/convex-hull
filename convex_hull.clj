@@ -41,28 +41,26 @@
          (let [#^Vector2d p (fn)]
            (aset ary i p))))))
 
-(defn rand-point []
+(defn #^Vector2d rand-point []
   (point (.nextGaussian r) (.nextGaussian r)))
 
 (defmacro quadrant-one-pseudo-angle [p]
   `(float
-    (let [#^Vector2d p# ~p
-          dx#           (float (.x p#))
-          dy#           (float (.y p#))]
+    (let [dx# (.x ~p)
+          dy# (.y ~p)]
     (/ dx# (+ dy# dx#)))))
 
 (defmacro pseudo-angle [p]
   `(float
-    (let [#^Vector2d p# ~p
-          dx#           (float (.x p#))
-          dy#           (float (.y p#))
-          zero#         (float 0)]
+    (let [dx#   (.x ~p)
+          dy#   (.y ~p)
+          zero# (float 0)]
       (cond
         (and (zero? dx#) (zero? dy#))      zero#
-        (and (>= dx# zero#) (> dy# zero#)) (quadrant-one-pseudo-angle p#)
-        (and (> dx# zero#) (<= dy# zero#)) (+ (float 1) (float (quadrant-one-pseudo-angle (point (clojure.contrib.math/abs dy#) dx#))))
-        (and (<= dx# zero#) (< dy# zero#)) (+ (float 2) (float (quadrant-one-pseudo-angle (point (clojure.contrib.math/abs dx#) (~'abs dy#)))))
-        (and (< dx# 0) (>= dy# zero#))     (+ (float 3) (float (quadrant-one-pseudo-angle (point dy# (clojure.contrib.math/abs dx#)))))
+        (and (>= dx# zero#) (> dy# zero#)) (quadrant-one-pseudo-angle ~p)
+        (and (> dx# zero#) (<= dy# zero#)) (+ (float 1) (quadrant-one-pseudo-angle (point (clojure.contrib.math/abs dy#) dx#)))
+        (and (<= dx# zero#) (< dy# zero#)) (+ (float 2) (quadrant-one-pseudo-angle (point (clojure.contrib.math/abs dx#) (~'abs dy#))))
+        (and (< dx# 0) (>= dy# zero#))     (+ (float 3) (quadrant-one-pseudo-angle (point dy# (clojure.contrib.math/abs dx#))))
       :else nil))))
 
 (defmacro point-min [p1 p2]
@@ -93,21 +91,16 @@
 ;; this could be made parallel
 ;; should verify that this is running as fast as possible
 (defmacro find-point-with-least-angle-from [base angle points]
-  `(let [#^Vector2d base#                      ~base
-         angle#                                (float ~angle)
-         #^"[Ljavax.vecmath.Vector2d;" points# ~points]
-     (areduce #^"[Ljavax.vecmath.Vector2d;" points# 
-	      i#
-	      result# nil
-	      (let [#^Vector2d next# (aget points# i#)]
-		(if (not= base# next#)
-		  (let [next-angle# (float (pseudo-angle (sub next# base#)))]
-		    (if (>= next-angle# angle#)
-		      (if (not result#)
-			[next-angle# next#]
-			(min-angle-and-point result# [next-angle# next#]))
-		      result#))
-		  result#)))))
+  `(areduce ~points i# result# nil
+	    (let [next# (aget ~points i#)]
+	      (if (not= ~base next#)
+		(let [next-angle# (pseudo-angle (sub next# ~base))]
+		  (if (>= next-angle# ~angle)
+		    (if (not result#)
+		      [next-angle# next#]
+		      (min-angle-and-point result# [next-angle# next#]))
+		    result#))
+		result#))))
 
 (defn hull [#^"[Ljavax.vecmath.Vector2d;" points]
   (println "Start")
