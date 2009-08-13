@@ -78,16 +78,6 @@
 	 angle2# (float (first ~ap2))]
      (if (< angle1# angle2#) ~ap1 ~ap2)))
 
-(defmacro find-point-with-least-angle-from [base angle points]
-  `(let [angle (float ~angle)]
-    (reduce min-angle-and-point
-	    (remove
-	     #(< (first %) angle)
-	     (map #(angle-and-point % base)
-		  (remove
-		   (fn [p] (= base p))
-		   points))))))
-
 ;; this could be made parallel
 (defmacro find-point-with-least-angle-from [base angle points]
   `(let [#^Vector2d base#                      ~base
