@@ -43,12 +43,38 @@
       (angle-and-point p1 p2))))
 
   (min-angle-and-point [5 5] [10 10])
+  (min-angle-and-point [4 3] [5 0.5])
+  (min-angle-and-point [2 -5] [-9 8])
+
+  ;; 200ms
+  (time
+   (dotimes [x 10000]
+     (let [p     [5 5]
+	   angle (pseudo-angle p)
+	   vs    [[1 1] [2 0.5] [3 3.5] [-5 -0.5] [10 20] 
+		  [0.3 0.3] [-4 3] [2 -5] [-9, 8] [-2.3, 3.333]]]
+       (find-point-with-least-angle-from p angle vs))))
 
   (let [p     [5 5]
 	angle (pseudo-angle p)
 	vs    [[1 1] [2 0.5] [3 3.5] [-5 -0.5] [10 20] 
 	       [0.3 0.3] [-4 3] [2 -5] [-9, 8] [-2.3, 3.333]]]
-   (find-point-with-least-angle-from p angle vs))
+       (find-point-with-least-angle-from p angle vs))
+
+  (defn test-foo [base angle points]
+    (let [angle (float angle)]
+      (remove
+       #(< (first %) angle)
+       (map #(angle-and-point % base)
+	    (remove
+	     (fn [p] (= base p))
+	     points)))))
+
+  (let [p     [5 5]
+	angle (pseudo-angle p)
+	vs    [[1 1] [2 0.5] [3 3.5] [-5 -0.5] [10 20] 
+	       [0.3 0.3] [-4 3] [2 -5] [-9, 8] [-2.3, 3.333]]]
+    (test-foo p angle vs))
  )
 
 (defn point-min [[x1 y1 :as p1] [x2 y2 :as p2]]
