@@ -7,13 +7,13 @@
 (set! *warn-on-reflection* 1)
 
 ;; 200ms - 500ms
-(time (def #^"[Ljavax.vecmath.Vector2d;" my-points (make-points 400000 rand-point)))
+(def #^"[Ljavax.vecmath.Vector2d;" my-points (make-points 400000 rand-point))
 (let [hull-points (time (hull my-points))]
   (printf "Points: %d\n" (count hull-points))
   (doseq [x hull-points] (println x)))
 
 ;; tho why bother when you can just do this? ;)
-(.test (new TimeJarvisMarch))
+;(.test (new TimeJarvisMarch))
 
 (comment
   (time
@@ -32,7 +32,18 @@
      (dotimes [x 20]
        (areduce my-points i result (point 0 0)
 		(let [p (aget my-points i)]
-		  (add result p))))))
+		  (sub result p))))))
+
+  ;; wow you pay for vectors
+  ;; 400ms vs. 70ms
+  (time
+   (do
+     (set! *warn-on-reflection* 1)
+     (let [n (atom 0)]
+	 (dotimes [x 20]
+	   (areduce my-points i result (point 0 0)
+		    (let [p (aget my-points i)]
+		      ))))))
 
   ;; 72ms to iterate 8 million times
   (time
