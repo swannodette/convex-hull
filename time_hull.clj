@@ -3,13 +3,16 @@
   (:import [javax.vecmath Vector2d])
   (:use clojure.contrib.math))
 
+(set! *warn-on-reflection* 1)
+
 (comment
+
   (let [hull-points (time (hull (points)))]
     (printf "Points: %d\n" (count hull-points))
     (doseq [x hull-points] (println x)))
  )
 
-(def r (java.util.Random.))
+(def #^java.util.Random r (java.util.Random.))
 
 (defmacro sub [v1 v2]
    `(let [#^Vector2d v1# ~v1
@@ -109,10 +112,21 @@
 		     result#))
 		 result#)))))
 
+(defn hull [#^"[Ljavax.vecmath.Vector2d;" points]
+  (println "Start")
+  (let [#^Vector2d starting-point (find-min-point points)]
+    (println starting-point)
+    (loop [hull-list [starting-point] angle (float 0) last-point starting-point]
+      (let [[angle next-point] (find-point-with-least-angle-from last-point angle points)]
+        (if (= next-point (first hull-list))
+          hull-list
+          (do
+	    (println hull-list angle next-point)
+	    (recur (conj hull-list next-point) (float angle) next-point)))))))
+
 (comment
-  ;; ignore p that eq base
-  ;; ignore p with angle < than angle
-  ;; 
+  (def my-points (points 10 rand-point))
+  (hull my-points)
   )
 
 (defn point-array [n]
@@ -221,9 +235,12 @@
   ;; right
   (do
     (set! *warn-on-reflection* 1)
-    (let [p     (point 5 5)
+    (let [p     (point -5.0 -0.5)
 	  angle (pseudo-angle p)
 	  vs    (points 10 (fill [(point 1 1) (point 2 0.5) (point 3 3.5) (point -5 -0.5) (point 10 20) 
 				  (point 0.3 0.3) (point -4 3) (point 2 -5) (point -9 8) (point -2.3 3.333)]))]
       (find-point-with-least-angle-from p angle vs)))
+
+  (hull (points 10 (fill [(point 1 1) (point 2 0.5) (point 3 3.5) (point -5 -0.5) (point 10 20) 
+				  (point 0.3 0.3) (point -4 3) (point 2 -5) (point -9 8) (point -2.3 3.333)])))
 )
