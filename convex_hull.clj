@@ -41,6 +41,8 @@
 	 p2 [10 10]]
     (dotimes [x 1000000]
       (angle-and-point p1 p2))))
+
+  (min-angle-and-point [5 5] [10 10])
  )
 
 (defn point-min [[x1 y1 :as p1] [x2 y2 :as p2]]

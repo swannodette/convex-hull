@@ -46,6 +46,11 @@
        (= x1# x2#) (if (< y1# y2#) p1# p2#)
        :else       p2#)))
 
+(defn find-min-point [points]
+  (let [#^"[Ljavax.vecmath.Vector2d;" points points]
+    (areduce points i result (aget points 0)
+	     (point-min result (aget points i)))))
+
 (defmacro delta-point [p1 p2]
   `(let [#^Vector2d p1# ~p1
 	 #^Vector2d p2# ~p2
@@ -57,6 +62,27 @@
 
 (defmacro angle-and-point [point base]
   `[(pseudo-angle (delta-point ~point ~base)) ~point])
+
+(defmacro min-angle-and-point [ap1 ap2]
+  `(let [#^Vector2d ap1# ~ap1
+	 #^Vector2d ap2# ~ap2]
+    (if (< (float (.x ap1#)) (float (.x ap2#))) ap1# ap2#)))
+
+(defmacro find-point-with-least-angle-from [base angle points]
+  `(let [angle (float ~angle)]
+    (reduce min-angle-and-point
+	    (remove
+	     #(< (first %) angle)
+	     (map #(angle-and-point % base)
+		  (remove
+		   (fn [p] (= base p))
+		   points))))))
+
+(comment
+  ;; ignore p that eq base
+  ;; ignore p with angle < than angle
+  ;; 
+  )
 
 (defn point-array [n]
   (make-array Vector2d n))
@@ -73,14 +99,6 @@
 
 (defmacro point [x y]
   `(new Vector2d (float ~x) (float ~y)))
-
-(comment 
-  (defmacro point-min [p1 p2]
-   `(let [v1# ~v1
-	  v2# ~v2]
-      (cond 
-	(< (.x v1#)))))
-)
 
 (defmacro sub [v1 v2]
    `(let [#^Vector2d v1# ~v1
@@ -101,18 +119,9 @@
       v1#))
 
 (comment
-  (def my-points (points 400000))
+  (def my-points (points 400000 rand-point))
 
-  ;; 100ms since we have create the points here
-  (do
-    (set! *warn-on-reflection* 1)
-    (time
-     (dotimes [x 1000000]
-       (sub (point 5 3) (point 1 1)))))
-
-  (def p1 (point 5 3))
-  (def p2 (point 1 1))
-
+  ;; right
   (quadrant-one-pseudo-angle (point 5 5))
 
   ;; < 10ms
@@ -124,7 +133,7 @@
       (dotimes [x 1000000]
 	(add p1 p2)))))
 
-  ;; a little slower
+  ;; a little slower than original
   (do
     (set! *warn-on-reflection* 1)
     (time
@@ -138,7 +147,7 @@
   ;; right
   (point-min (point 5 5) (point 10 10))
 
-  ;; 5x faster
+  ;; 5x faster than original
   (do
     (set! *warn-on-reflection* 1)
     (time
@@ -153,7 +162,7 @@
   ;; right
   (angle-and-point (point 5 5) (point 1 1))
 
-  ;; 2x faster
+  ;; 2x faster than original
   (do
     (set! *warn-on-reflection* 1)
     (time
@@ -162,9 +171,17 @@
        (dotimes [x 1000000]
 	 (angle-and-point p1 p2)))))
 
-  ;; understanding areduce
+  ;; takes 3.5s
   (do
    (set! *warn-on-reflection* 1)
     (time
      (points 400000 rand-point)))
+
+  ;; 3ms
+  (do
+    (time
+     (find-min-point my-points)))
+
+  ;; right
+  (min-angle-and-point (point 5 5) (point 10 10))
 )
