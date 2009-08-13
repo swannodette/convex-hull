@@ -1,8 +1,13 @@
 (ns convex-hull
   (:import [javax.vecmath Vector2d])
+  (:import Points)
   (:use clojure.contrib.math))
 
 (set! *warn-on-reflection* 1)
+
+(definline points
+  "Casts to Vector2d[]"
+  [xs] `(. Points points ~xs))
 
 (def #^java.util.Random r (java.util.Random.))
 
