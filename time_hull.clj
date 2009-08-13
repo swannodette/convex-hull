@@ -13,9 +13,10 @@
 
 (defmacro sub [v1 v2]
    `(let [#^Vector2d v1# ~v1
-	  #^Vector2d v2# ~v2]
-      (.sub v1# v2#)
-      v1#))
+	  #^Vector2d v2# ~v2
+	  #^Vector2d result# (.clone v1#)]
+      (.sub result# v2#)
+      result#))
 
 (defmacro point [x y]
   `(new Vector2d (float ~x) (float ~y)))
