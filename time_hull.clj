@@ -6,8 +6,8 @@
 
 (set! *warn-on-reflection* 1)
 
-;; 2s - 2.5s
-(def #^"[Ljavax.vecmath.Vector2d;" my-points (make-points 400000 rand-point))
+;; 200ms - 500ms
+(time (def #^"[Ljavax.vecmath.Vector2d;" my-points (make-points 400000 rand-point)))
 (let [hull-points (time (hull my-points))]
   (printf "Points: %d\n" (count hull-points))
   (doseq [x hull-points] (println x)))
@@ -27,6 +27,25 @@
        (areduce my-points i result (point 0 0)
 		(let [p (aget my-points i)]
 		  (add result p))))))
+
+  ;; 72ms to iterate 8 million times
+  (time
+   (do
+     (set! *warn-on-reflection* 1)
+     (dotimes [x 20]
+       (areduce my-points i result (point 0 0)
+		(aget my-points i)))))
+
+  ;; BAD - make-points is a function, Clojure can't
+  ;; know the return type
+  (do
+    (set! *warn-on-reflection* 1)
+    (let [bad-points (make-points 400000 rand-point)]
+     (time
+      (dotimes [x 20]
+	(areduce bad-points i result (point 0 0)
+		 (let [p (aget bad-points i)]
+		   (add result p)))))))
 
   (def my-floats (make-array (. Float TYPE) 400000))
 

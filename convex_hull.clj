@@ -12,31 +12,31 @@
 (def #^java.util.Random r (java.util.Random.))
 
 (defmacro sub [v1 v2]
-  `(let [#^Vector2d v1# ~v1
-         #^Vector2d v2# ~v2
-         #^Vector2d result# (.clone v1#)]
+  `(let [v1# ~v1
+         v2# ~v2
+         result# (.clone v1#)]
      (.sub result# v2#)
      result#))
 
 (defmacro add [v1 v2]
-  `(let [#^Vector2d v1# ~v1
-         #^Vector2d v2# ~v2
-         #^Vector2d result# (.clone v1#)]
+  `(let [v1# ~v1
+         v2# ~v2
+         result# (.clone v1#)]
      (.add result# v2#)
      result#))
 
 (defmacro point [x y]
   `(new Vector2d (float ~x) (float ~y)))
 
-(defn point-array [n]
+(defn #^"[Ljavax.vecmath.Vector2d;" point-array [n]
   (make-array Vector2d n))
 
-(defn make-points
+(defn #^"[Ljavax.vecmath.Vector2d;" make-points
   ([n] 
-     (let [#^"[Ljavax.vecmath.Vector2d;" ary (point-array n)]
+     (let [ary (point-array n)]
        ary))
   ([n fn] 
-     (let [#^"[Ljavax.vecmath.Vector2d;" ary (point-array n)]
+     (let [ary (point-array n)]
        (amap ary i result 
          (let [#^Vector2d p (fn)]
            (aset ary i p))))))
