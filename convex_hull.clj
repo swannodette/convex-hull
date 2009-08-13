@@ -43,6 +43,12 @@
       (angle-and-point p1 p2))))
 
   (min-angle-and-point [5 5] [10 10])
+
+  (let [p     [5 5]
+	angle (pseudo-angle p)
+	vs    [[1 1] [2 0.5] [3 3.5] [-5 -0.5] [10 20] 
+	       [0.3 0.3] [-4 3] [2 -5] [-9, 8] [-2.3, 3.333]]]
+   (find-point-with-least-angle-from p angle vs))
  )
 
 (defn point-min [[x1 y1 :as p1] [x2 y2 :as p2]]

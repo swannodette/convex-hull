@@ -79,15 +79,15 @@
 		   points))))))
 
 (defmacro find-point-with-least-angle-from [base angle points]
-  `(let [#^Vector2d base#              ~base
-	 angle#                        (float ~angle)
-	 #^"[Ljavax.vecmath.Vector2d;" points]
-    (areduce points i result (aget points (int 0))
-	    (let [#^Vector2d next (aget points i)]
-	      (if (and (not= base next)
-		       (>= (pseudo-angle next) angle))
-		(min-angle-and-point result next)
-		next)))))
+  `(let [#^Vector2d base#                      ~base
+	 angle#                                (float ~angle)
+	 #^"[Ljavax.vecmath.Vector2d;" points# ~points]
+    (areduce points# i# result# (aget points# (int 0))
+	    (let [#^Vector2d next# (aget points# i#)]
+	      (if (and (not= base# next#)
+		       (>= (pseudo-angle next#) angle#))
+		(min-angle-and-point result# next#)
+		next#)))))
 
 (comment
   ;; ignore p that eq base
@@ -195,4 +195,21 @@
 
   ;; right
   (min-angle-and-point (point 5 5) (point 10 10))
+
+  (defn fill [v]
+    (let [idx (atom 0)]
+      (fn []
+	(let [result (nth v @idx)]
+	  (swap! idx inc)
+	  result))))
+
+  (let [p     (point 5 5)
+	angle (pseudo-angle p)
+	vs    (points 10 (fill [(point 1 1) (point 2 0.5) (point 3 3.5) (point -5 -0.5) (point 10 20) 
+			       (point 0.3 0.3) (point -4 3) (point 2 -5) (point -9 8) (point -2.3 3.333)]))]
+   (find-point-with-least-angle-from p angle vs))
+
+  ;; wrong
+  (vec (points 10 (fill [(point 1 1) (point 2 0.5) (point 3 3.5) (point -5 -0.5) (point 10 20) 
+		     (point 0.3 0.3) (point -4 3) (point 2 -5) (point -9 8) (point -2.3 3.333)])))
 )
