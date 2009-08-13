@@ -1,110 +1,85 @@
 (ns convex-hull
+  (:import [javax.vecmath Vector2d])
   (:use clojure.contrib.math))
 
-(defn quadrant-one-pseudo-angle [dx dy]
-  (let [dx (float dx)
-	dy (float dy)]
-   (/ dx (+ dy dx))))
+(set! *warn-on-reflection* 1)
 
-(defn pseudo-angle [[dx dy]]
-  (let [dx (float dx)
-	dy (float dy)]
+(def #^java.util.Random r (java.util.Random.))
+
+(defmacro sub [v1 v2]
+   `(let [#^Vector2d v1# ~v1
+	  #^Vector2d v2# ~v2
+	  #^Vector2d result# (.clone v1#)]
+      (.sub result# v2#)
+      result#))
+
+(defmacro point [x y]
+  `(new Vector2d (float ~x) (float ~y)))
+
+(defn point-array [n]
+  (make-array Vector2d n))
+
+(defn points
+  ([n] 
+     (let [#^"[Ljavax.vecmath.Vector2d;" ary (point-array n)]
+       ary))
+  ([n fn] 
+     (let [#^"[Ljavax.vecmath.Vector2d;" ary (point-array n)]
+       (amap ary i result 
+	     (let [#^Vector2d p (fn)]
+	       (aset ary i p))))))
+
+(defn rand-point []
+  (point (.nextGaussian r) (.nextGaussian r)))
+
+(defmacro quadrant-one-pseudo-angle [p]
+  `(float
+    (let [#^Vector2d p# ~p
+	  dx# (float (.x p#))
+	  dy# (float (.y p#))]
+      (/ dx# (+ dy# dx#)))))
+
+(defmacro pseudo-angle [p]
+  `(float
+    (let [#^Vector2d p# ~p
+	  dx#           (float (.x p#))
+	  dy#           (float (.y p#))
+	  zero#         (float 0)]
       (cond
-	(and (= dx 0) (= dy 0))	  0
-	(and (>= dx 0) (> dy 0))  (quadrant-one-pseudo-angle dx dy)
-	(and (> dx 0) (<= dy 0))  (+ 1 (quadrant-one-pseudo-angle (abs dy) dx))
-	(and (<= dx 0) (< dy 0))  (+ 2 (quadrant-one-pseudo-angle (abs dx) (abs dy)))
-	(and (< dx 0) (>= dy 0))  (+ 3 (quadrant-one-pseudo-angle dy (abs dx)))
-	:else nil)))
+	(and (zero? dx#) (zero? dy#))      zero#
+	(and (>= dx# zero#) (> dy# zero#)) (quadrant-one-pseudo-angle p#)
+	(and (> dx# zero#) (<= dy# zero#)) (+ (float 1) (float (quadrant-one-pseudo-angle (point (clojure.contrib.math/abs dy#) dx#))))
+	(and (<= dx# zero#) (< dy# zero#)) (+ (float 2) (float (quadrant-one-pseudo-angle (point (clojure.contrib.math/abs dx#) (~'abs dy#)))))
+	(and (< dx# 0) (>= dy# zero#))     (+ (float 3) (float (quadrant-one-pseudo-angle (point dy# (clojure.contrib.math/abs dx#)))))
+	:else nil))))
 
-(comment
-  (time
-   (dotimes [x 1000000]
-     (pseudo-angle [5 5])))
-
-  (time
-   (dotimes [x 1000000]
-     (quadrant-one-pseudo-angle 5 5)))
-
-  (time
-   (let [p1 [5 5]
-	 p2 [10 10]]
-    (dotimes [x 1000000]
-      (delta-point p1 p2))))
-
-  (delta-point [5 5] [10 10])
-
-  (angle-and-point [5 5] [1 1])
-
-  (time
-   (let [p1 [5 5]
-	 p2 [10 10]]
-    (dotimes [x 1000000]
-      (angle-and-point p1 p2))))
-
-  (min-angle-and-point [5 5] [10 10])
-  (min-angle-and-point [4 3] [5 0.5])
-  (min-angle-and-point [2 -5] [-9 8])
-
-  ;; 200ms
-  (time
-   (dotimes [x 10000]
-     (let [p     [5 5]
-	   angle (pseudo-angle p)
-	   vs    [[1 1] [2 0.5] [3 3.5] [-5 -0.5] [10 20] 
-		  [0.3 0.3] [-4 3] [2 -5] [-9, 8] [-2.3, 3.333]]]
-       (find-point-with-least-angle-from p angle vs))))
-
-  (let [p     [5 5]
-	angle (pseudo-angle p)
-	vs    [[1 1] [2 0.5] [3 3.5] [-5 -0.5] [10 20] 
-	       [0.3 0.3] [-4 3] [2 -5] [-9, 8] [-2.3, 3.333]]]
-       (find-point-with-least-angle-from p angle vs))
-
-  (defn test-foo [base angle points]
-    (let [angle (float angle)]
-      (remove
-       #(< (first %) angle)
-       (map #(angle-and-point % base)
-	    (remove
-	     (fn [p] (= base p))
-	     points)))))
-
-  (let [p     [5 5]
-	angle (pseudo-angle p)
-	vs    [[1 1] [2 0.5] [3 3.5] [-5 -0.5] [10 20] 
-	       [0.3 0.3] [-4 3] [2 -5] [-9, 8] [-2.3, 3.333]]]
-    (test-foo p angle vs))
- )
-
-(defn point-min [[x1 y1 :as p1] [x2 y2 :as p2]]
-  (let [x1 (float x1)
-	y1 (float y1)
-	x2 (float x2)
-	y2 (float y2)]
-    (cond
-      (< x1 x2) p1
-      (= x1 x2) (if (< y1 y2) p1 p2)
-      :else     p2)))
+(defmacro point-min [p1 p2]
+  `(let [#^Vector2d p1# ~p1
+	 #^Vector2d p2# ~p2
+	 x1#        (.x p1#)
+	 y1#        (.y p1#)
+	 x2#        (.x p2#)
+	 y2#        (.y p2#)]
+     (cond
+       (< x1# x2#) p1#
+       (= x1# x2#) (if (< y1# y2#) p1# p2#)
+       :else       p2#)))
 
 (defn find-min-point [points]
-  (reduce point-min points))
+  (let [#^"[Ljavax.vecmath.Vector2d;" points points]
+    (areduce points i result (aget points (int 0))
+	     (point-min result (aget points i)))))
 
-(defn delta-point [[x1 y1] [x2 y2]]
-  (let [x1 (float x1)
-	y1 (float y1)
-	x2 (float x2)
-	y2 (float y2)]
-    [(- x1 x2) (- y1 y2)]))
+(defmacro angle-and-point [point base]
+  `[(pseudo-angle (sub ~point ~base)) ~point])
 
-(defn angle-and-point [point base]
-  [(pseudo-angle (delta-point point base)) point])
+(defmacro min-angle-and-point [ap1 ap2]
+  `(let [angle1# (float (first ~ap1))
+	 angle2# (float (first ~ap2))]
+     (if (< angle1# angle2#) ~ap1 ~ap2)))
 
-(defn min-angle-and-point [ap1 ap2]
-  (if (< (float (first ap1)) (float (first ap2))) ap1 ap2))
-
-(defn find-point-with-least-angle-from [base angle points]
-  (let [angle (float angle)]
+(defmacro find-point-with-least-angle-from [base angle points]
+  `(let [angle (float ~angle)]
     (reduce min-angle-and-point
 	    (remove
 	     #(< (first %) angle)
@@ -113,9 +88,26 @@
 		   (fn [p] (= base p))
 		   points))))))
 
-(defn hull [points]
+(defmacro find-point-with-least-angle-from [base angle points]
+  `(let [#^Vector2d base#                      ~base
+	 angle#                                (float ~angle)
+	 #^"[Ljavax.vecmath.Vector2d;" points# ~points]
+    (areduce points# 
+	     i#
+	     result# nil
+	     (let [#^Vector2d next# (aget points# i#)]
+	       (if (not= base# next#)
+		 (let [next-angle# (float (pseudo-angle (sub next# base#)))]
+		   (if (>= next-angle# angle#)
+		     (if (not result#)
+		       [next-angle# next#]
+		       (min-angle-and-point result# [next-angle# next#]))
+		     result#))
+		 result#)))))
+
+(defn hull [#^"[Ljavax.vecmath.Vector2d;" points]
   (println "Start")
-  (let [starting-point (find-min-point points)]
+  (let [#^Vector2d starting-point (find-min-point points)]
     (println starting-point)
     (loop [hull-list [starting-point] angle (float 0) last-point starting-point]
       (let [[angle next-point] (find-point-with-least-angle-from last-point angle points)]
