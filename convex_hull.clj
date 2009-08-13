@@ -44,46 +44,44 @@
 (defn #^Vector2d rand-point []
   (point (.nextGaussian r) (.nextGaussian r)))
 
-(defmacro quadrant-one-pseudo-angle [p]
-  `(float
-    (let [dx# (.x ~p)
-          dy# (.y ~p)]
-    (/ dx# (+ dy# dx#)))))
+(defn quadrant-one-pseudo-angle [#^Vector2d p]
+  (let [dx (.x p)
+	dy (.y p)]
+     (/ dx (+ dy dx))))
 
-(defmacro pseudo-angle [p]
-  `(float
-    (let [dx#   (.x ~p)
-          dy#   (.y ~p)
-          zero# (float 0)]
-      (cond
-        (and (zero? dx#) (zero? dy#))      zero#
-        (and (>= dx# zero#) (> dy# zero#)) (quadrant-one-pseudo-angle ~p)
-        (and (> dx# zero#) (<= dy# zero#)) (+ (float 1) (quadrant-one-pseudo-angle (point (clojure.contrib.math/abs dy#) dx#)))
-        (and (<= dx# zero#) (< dy# zero#)) (+ (float 2) (quadrant-one-pseudo-angle (point (clojure.contrib.math/abs dx#) (~'abs dy#))))
-        (and (< dx# 0) (>= dy# zero#))     (+ (float 3) (quadrant-one-pseudo-angle (point dy# (clojure.contrib.math/abs dx#))))
-      :else nil))))
-
-(defmacro point-min [p1 p2]
-  `(let [x1#        (.x ~p1)
-         y1#        (.y ~p1)
-         x2#        (.x ~p2)
-         y2#        (.y ~p2)]
+(defn pseudo-angle [#^Vector2d p]
+  (let [dx   (.x p)
+	dy   (.y p)
+	zero (float 0)]
      (cond
-       (< x1# x2#) ~p1
-       (= x1# x2#) (if (< y1# y2#) ~p1 ~p2)
-       :else       ~p2)))
+       (and (zero? dx) (zero? dy))    zero
+       (and (>= dx zero) (> dy zero)) (quadrant-one-pseudo-angle p)
+       (and (> dx zero) (<= dy zero)) (+ (float 1) (float (quadrant-one-pseudo-angle (point (abs dy) dx))))
+       (and (<= dx zero) (< dy zero)) (+ (float 2) (float (quadrant-one-pseudo-angle (point (abs dx) (abs dy)))))
+       (and (< dx 0) (>= dy zero))    (+ (float 3) (float (quadrant-one-pseudo-angle (point dy (abs dx)))))
+       :else nil)))
 
-(defn find-min-point [#^"[Ljavax.vecmath.Vector2d;" vs]
+(defn #^Vector2d point-min [#^Vector2d p1 #^Vector2d p2]
+  (let [x1 (.x p1)
+	y1 (.y p1)
+	x2 (.x p2)
+	y2 (.y p2)]
+     (cond
+       (< x1 x2) p1
+       (= x1 x2) (if (< y1 y2) p1 p2)
+       :else     p2)))
+
+(defn #^Vector2d find-min-point [#^"[Ljavax.vecmath.Vector2d;" vs]
   (areduce vs i result (aget vs (int 0))
 	   (point-min result (aget vs i))))
 
-(defmacro angle-and-point [point base]
-  `[(pseudo-angle (sub ~point ~base)) ~point])
+(defn angle-and-point [#^Vector2d point #^Vector2d base]
+  [(pseudo-angle (sub point base)) point])
 
-(defmacro min-angle-and-point [ap1 ap2]
-  `(let [angle1# (float (first ~ap1))
-         angle2# (float (first ~ap2))]
-       (if (< angle1# angle2#) ~ap1 ~ap2)))
+(defn min-angle-and-point [ap1 ap2]
+  (let [angle1 (float (first ap1))
+	angle2 (float (first ap2))]
+    (if (< angle1 angle2) ap1 ap2)))
 
 ;; this could be made parallel
 ;; should verify that this is running as fast as possible

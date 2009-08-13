@@ -16,6 +16,12 @@
 (.test (new TimeJarvisMarch))
 
 (comment
+  (time
+   (let [#^"[Ljavax.vecmath.Vector2d;" my-points my-points]
+     (find-min-point my-points)))
+  )
+
+(comment
   ;; CORRECT - 230ms
   ;; note we don't need to type hint (point 0 0)
   ;; this is not a function it's a inlined Java form
