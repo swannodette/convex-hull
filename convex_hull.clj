@@ -64,21 +64,18 @@
       :else nil))))
 
 (defmacro point-min [p1 p2]
-  `(let [#^Vector2d p1# ~p1
-         #^Vector2d p2# ~p2
-         x1#        (.x p1#)
-         y1#        (.y p1#)
-         x2#        (.x p2#)
-         y2#        (.y p2#)]
+  `(let [x1#        (.x ~p1)
+         y1#        (.y ~p1)
+         x2#        (.x ~p2)
+         y2#        (.y ~p2)]
      (cond
-       (< x1# x2#) p1#
-       (= x1# x2#) (if (< y1# y2#) p1# p2#)
-       :else       p2#)))
+       (< x1# x2#) ~p1
+       (= x1# x2#) (if (< y1# y2#) ~p1 ~p2)
+       :else       ~p2)))
 
-(defn find-min-point [points]
-  (let [#^"[Ljavax.vecmath.Vector2d;" points points]
-    (areduce points i result (aget points (int 0))
-      (point-min result (aget points i)))))
+(defn find-min-point [#^"[Ljavax.vecmath.Vector2d;" points]
+  (areduce points i result (aget points (int 0))
+	   (point-min result (aget points i))))
 
 (defmacro angle-and-point [point base]
   `[(pseudo-angle (sub ~point ~base)) ~point])
