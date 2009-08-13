@@ -10,6 +10,9 @@
   (printf "Points: %d\n" (count hull-points))
   (doseq [x hull-points] (println x)))
 
+(defn rand-point []
+  (point (.nextGaussian r) (.nextGaussian r)))
+
 (defmacro quadrant-one-pseudo-angle [p]
   `(float
     (let [#^Vector2d p# ~p
@@ -55,8 +58,18 @@
 (defmacro angle-and-point [point base]
   `[(pseudo-angle (delta-point ~point ~base)) ~point])
 
-(defn points [n]
+(defn point-array [n]
   (make-array Vector2d n))
+
+(defn points
+  ([n] 
+     (let [#^"[Ljavax.vecmath.Vector2d;" ary (point-array n)]
+       ary))
+  ([n fn] 
+     (let [#^"[Ljavax.vecmath.Vector2d;" ary (point-array n)]
+       (amap ary i result 
+	     (let [#^Vector2d p (fn)]
+	       (aset ary i p))))))
 
 (defmacro point [x y]
   `(new Vector2d (float ~x) (float ~y)))
@@ -102,13 +115,16 @@
 
   (quadrant-one-pseudo-angle (point 5 5))
 
-  ;; ~20ms
+  ;; < 10ms
   (do
     (set! *warn-on-reflection* 1)
-    (time
-     (dotimes [x 1000000]
-       (add p1 p2))))
+    (let [p1 (point 5 5)
+	  p2 (point 2 3)]
+     (time
+      (dotimes [x 1000000]
+	(add p1 p2)))))
 
+  ;; a little slower
   (do
     (set! *warn-on-reflection* 1)
     (time
@@ -122,6 +138,7 @@
   ;; right
   (point-min (point 5 5) (point 10 10))
 
+  ;; 5x faster
   (do
     (set! *warn-on-reflection* 1)
     (time
@@ -133,5 +150,21 @@
   ;; right
   (delta-point (point 5 5) (point 10 10))
 
+  ;; right
   (angle-and-point (point 5 5) (point 1 1))
+
+  ;; 2x faster
+  (do
+    (set! *warn-on-reflection* 1)
+    (time
+     (let [p1 (point 5 5)
+	   p2 (point 10 10)]
+       (dotimes [x 1000000]
+	 (angle-and-point p1 p2)))))
+
+  ;; understanding areduce
+  (do
+   (set! *warn-on-reflection* 1)
+    (time
+     (points 400000 rand-point)))
 )
