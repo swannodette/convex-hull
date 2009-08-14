@@ -12,6 +12,57 @@
   (doseq [x hull-points] (println x)))
 
 (comment
+  ;; takes 0.438 ms for 8000000 iterations, that's more like it
+  ;; 356ms if we call .equals and create a point in each loop
+
+  ;; 80ms if we don't create the vector
+  ;; we should have a mutable vector we use to hold results
+  ;; ~43ms if nothing happens
+  ;; ~110ms with Vector2d .equals
+  ;; ~150ms with Vector2d .equals and .sub
+  ;; ~270ms with fn call to sub instead of .sub
+  ;; ~300ms if using Vector2d .set and .sub
+  ;; ~260ms with sub macro
+  ;; ~500ms with call to pseudo-angle
+  ;; ~450ms with pseudo-angle as macro
+  (time
+   (do
+     (set! *warn-on-reflection* 1)
+     (dotimes [x 20]
+       (find-point-with-least-angle-from (point 0 0) 0 my-points))))
+
+  ;; 20 ms
+  (do
+   (set! *warn-on-reflection* 1)
+   (let [p1 (point 5 5)
+	 p2 (point 1 1)]
+     (time
+      (do
+	(set! *warn-on-reflection* 1)
+	(dotimes [x 8000000]
+	  (.sub p1 p2))))))
+
+  ;; 9 ms
+  (do
+   (set! *warn-on-reflection* 1)
+   (let [p (point 5 5)]
+     (time
+      (do
+	(set! *warn-on-reflection* 1)
+	(dotimes [x 8000000]
+	  (.set p 0 0))))))
+
+  ;; 13ms
+  (do
+    (set! *warn-on-reflection* 1)
+    (let [p1 (point 5 5)
+	  p2 (point 1 1)]
+      (time
+       (do
+	 (set! *warn-on-reflection* 1)
+	 (dotimes [x 8000000]
+	   (.set p1 (.x p2) (.y p2)))))))
+
   ;; CORRECT - 230ms
   ;; note we don't need to type hint (point 0 0)
   ;; this is not a function it's a inlined Java form
@@ -84,5 +135,4 @@
      (dotimes [x 20]
        (areduce (floats my-floats) i result (float 1)
 		(+ result (float (aget (floats my-floats) i)))))))
-
 )
