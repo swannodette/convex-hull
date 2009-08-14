@@ -1,25 +1,12 @@
 (ns convex-hull
-  (:import [javax.vecmath Vector2d])
-  (:import Points)
-  (:use clojure.contrib.math))
+  (:import [javax.vecmath Vector2d]))
 
 (set! *warn-on-reflection* 1)
-
-(definline points
-  "Casts to Vector2d[]"
-  [xs] `(. Points points ~xs))
 
 (def #^java.util.Random r (java.util.Random.))
 
 (defmacro point [x y]
   `(new Vector2d (float ~x) (float ~y)))
-
-(comment
-  (defmacro sub [v1 v2]
-    `(let [#^Vector2d temp# (.clone ~v1)]
-       (.sub temp# ~v2)
-       temp#))
-)
 
 (def #^Vector2d mutable-point (point 0 0))
 (defmacro sub [v1 v2]
@@ -29,17 +16,6 @@
 	   #^Vector2d v#             ~v2]
        (.sub mutable-point# ~v2)
        mutable-point#)))
-
-(comment
-  (def #^Vector2d mutable-point (point 0 0))
-  (defmacro sub [v1 v2]
-    `(do
-       (.set mutable-point (.x ~v1) (.y ~v1))
-       (let [#^Vector2d mutable-point# mutable-point
-	     #^Vector2d v#             ~v2]
-	 (.sub mutable-point# ~v2)
-	 mutable-point#)))
-  )
 
 (defn #^"[Ljavax.vecmath.Vector2d;" point-array [n]
   (make-array Vector2d n))
@@ -91,9 +67,6 @@
   (areduce vs i result (aget vs (int 0))
 	   (point-min result (aget vs i))))
 
-(defn angle-and-point [#^Vector2d point #^Vector2d base]
-  [(pseudo-angle (sub point base)) point])
-
 (defn find-point-with-least-angle-from [#^Vector2d base angle #^"[Ljavax.vecmath.Vector2d;" vs]
   (let [angle      (float angle)]
     (loop [i (int 0) #^Vector2d result nil result-angle (float 0)]
@@ -116,7 +89,7 @@
   (let [#^Vector2d starting-point (find-min-point vs)]
     (println starting-point)
     (loop [hull-list [starting-point] angle (float 0) #^Vector2d last-point starting-point]
-      (let [[angle #^Vector2d next-point] (find-point-with-least-angle-from last-point angle (points vs))
+      (let [[angle #^Vector2d next-point] (find-point-with-least-angle-from last-point angle vs)
 	    #^Vector2d first-point        (first hull-list)]
         (if (.equals next-point first-point)
 	  hull-list

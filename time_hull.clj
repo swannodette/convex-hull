@@ -1,8 +1,6 @@
 (ns time-hull
   (:use convex-hull)
-  (:import [javax.vecmath Vector2d])
-  (:import TimeJarvisMarch)
-  (:import Points))
+  (:import [javax.vecmath Vector2d]))
 
 (set! *warn-on-reflection* 1)
 
@@ -12,9 +10,8 @@
   (doseq [x hull-points] (println x)))
 
 (comment
-  ;; takes 0.438 ms for 8000000 iterations, that's more like it
+  ;; notes
   ;; 356ms if we call .equals and create a point in each loop
-
   ;; 80ms if we don't create the vector
   ;; we should have a mutable vector we use to hold results
   ;; ~43ms if nothing happens
@@ -27,9 +24,6 @@
   ;; ~450ms with pseudo-angle as macro
   ;; < ~450ms with quadrant-one-pseudo-angle as macro
   ;; ~350ms with type hinted pseudo-angle macro
-  ;; ~600ms with two calls to pseudo-angle
-  ;; ~650ms with two if expressions
-  ;; > 1000ms if we actually operate on next
   (time
    (do
      (set! *warn-on-reflection* 1)
