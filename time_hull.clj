@@ -25,11 +25,33 @@
   ;; ~260ms with sub macro
   ;; ~500ms with call to pseudo-angle
   ;; ~450ms with pseudo-angle as macro
+  ;; < ~450ms with quadrant-one-pseudo-angle as macro
+  ;; ~350ms with type hinted pseudo-angle macro
+  ;; ~600ms with two calls to pseudo-angle
+  ;; ~650ms with two if expressions
+  ;; > 1000ms if we actually operate on next
   (time
    (do
      (set! *warn-on-reflection* 1)
      (dotimes [x 20]
        (find-point-with-least-angle-from (point 0 0) 0 my-points))))
+
+  ;; 266ms
+  (do
+    (time (dotimes [x 8000000]
+	    (min (float 5) (float 6)))))
+
+  ;; 107ms
+  (do
+    (time (dotimes [x 8000000]
+	    (java.lang.Math/min (float 5) (float 6)))))
+
+  ;; 100ms
+  (do
+    (let [p (point 0 0)]
+      (time
+       (dotimes [x 8000000]
+	 (nil? p)))))
 
   ;; 20 ms
   (do
@@ -42,6 +64,19 @@
 	(dotimes [x 8000000]
 	  (.sub p1 p2))))))
 
+  ;; 160s
+  ;; ten times slower than direct call to .sub
+  (do
+   (set! *warn-on-reflection* 1)
+   (let [p1 (point 5 5)
+	 p2 (point 1 1)]
+     (time
+      (do
+	(set! *warn-on-reflection* 1)
+	(dotimes [x 8000000]
+	  (let [#^Vector2d copy (.clone p1)]
+	   (.sub copy p2)))))))
+
   ;; 9 ms
   (do
    (set! *warn-on-reflection* 1)
@@ -51,6 +86,30 @@
 	(set! *warn-on-reflection* 1)
 	(dotimes [x 8000000]
 	  (.set p 0 0))))))
+
+  ;; 20ms
+  (do
+   (set! *warn-on-reflection* 1)
+   (let [mp (point 0 0)
+	 p1 (point 5 5)
+	 p2 (point 1 1)]
+     (time
+      (do
+	(set! *warn-on-reflection* 1)
+	(dotimes [x 8000000]
+	  (do
+	    (.set mp (.x p1) (.x p2))
+	    (.sub mp p2)))))))
+
+  (do
+   (set! *warn-on-reflection* 1)
+   (let [p (point 5 5)]
+     (time
+      (do
+	(set! *warn-on-reflection* 1)
+	(dotimes [x 8000000]
+	  (.set p 0 0))))))
+
 
   ;; 13ms
   (do
